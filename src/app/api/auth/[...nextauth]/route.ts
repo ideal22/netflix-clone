@@ -1,5 +1,11 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions, Session } from 'next-auth'
+import { JWT } from 'next-auth/jwt'
 import GithubProvider from 'next-auth/providers/github'
+
+type CallbackParamsType = {
+  session: Session
+  token: JWT
+}
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -9,13 +15,15 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, token }: any) {
-      session.user.username = session?.user?.name
+    async session({ session, token }: CallbackParamsType) {
+      const newSession = JSON.parse(JSON.stringify(session))
+      newSession.user.username = newSession.user.name
         .split(' ')
         .join('')
         .toLowerCase()
-      session.user.uid = token.sub
-      return session
+      newSession.user.uid = token.sub
+
+      return newSession
     },
   },
   secret: process.env.SECRET_KEY,
