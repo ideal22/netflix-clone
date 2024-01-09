@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+// Create an account
 export const POST = async (req: Request) => {
   try {
     await connectToDatabase()
@@ -32,6 +33,61 @@ export const POST = async (req: Request) => {
 
     const account = await Account.create({ name, uid, pin: hashedPin })
     return NextResponse.json({ account })
+  } catch (e) {
+    return NextResponse.json({
+      success: false,
+      message: 'Something went wrong!',
+    })
+  }
+}
+
+// Get account by uid
+export const GET = async (req: Request) => {
+  try {
+    await connectToDatabase()
+
+    const { searchParams } = new URL(req.url)
+    const uid = searchParams.get('uid')
+
+    if (!uid) {
+      return NextResponse.json({
+        success: false,
+        message: 'Account uid is required!',
+      })
+    }
+
+    const account = await Account.find({ uid })
+
+    return NextResponse.json({ success: true, account })
+  } catch (e) {
+    return NextResponse.json({
+      success: false,
+      message: 'Something went wrong!',
+    })
+  }
+}
+
+// Delete an account
+export const DELETE = async (req: Request) => {
+  try {
+    await connectToDatabase()
+
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        message: 'Account id is required!',
+      })
+    }
+
+    await Account.findByIdAndDelete({ id })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Account deleted successfully!',
+    })
   } catch (e) {
     return NextResponse.json({
       success: false,
