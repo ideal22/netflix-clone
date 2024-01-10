@@ -37,7 +37,7 @@ const CreateAccountForm = () => {
       await createAccount({
         ...values,
         uid: session?.user?.uid,
-      } as AccountProps)
+      } as AccountProps).unwrap()
     } catch (e) {
       if (e instanceof Error) {
         console.error(e.message)
