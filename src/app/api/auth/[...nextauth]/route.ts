@@ -16,13 +16,14 @@ const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async session({ session, token }: CallbackParamsType) {
+      console.log(session, 'session')
       const newSession = JSON.parse(JSON.stringify(session))
       newSession.user.username = newSession.user.name
         .split(' ')
         .join('')
         .toLowerCase()
       newSession.user.uid = token.sub
-
+      console.log(newSession)
       return newSession
     },
   },

@@ -1,16 +1,26 @@
 'use client'
 import { LockKeyhole, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent } from '../ui/dialog'
 import CreateAccountForm from '../form/CreateAccountForm'
 import LoginAccountForm from '../form/LoginAccountForm'
+import { AccountProps, AccountsAxsiosResponse } from '@/types/context.interface'
+import { useSession } from 'next-auth/react'
+import { accountApi } from '@/redux-store/reducers/AccountReducer'
 
 const ManageAccount = () => {
   const [isDelete, setIsDelete] = useState<boolean>(false)
   const [openDialog, setOpenDialog] = useState<boolean>(false)
   const [state, setState] = useState<'login' | 'create'>('create')
+  // const [accounts, setAccounts] = useState<AccountProps[]>([])
+
+  const { data: session }: any = useSession()
+  const { data: result, isLoading } = accountApi.useFetchAllAccountsQuery(
+    session?.user?.uid,
+  )
 
   const createAccount = () => {
     setOpenDialog(true)
@@ -24,36 +34,45 @@ const ManageAccount = () => {
   return (
     <div className="min-h-screen flex justify-center items-center flex-col relative">
       <div className="flex justify-center flex-col items-center">
-        <h1 className="text-white font-bold text-5xl my-12">Who's Watching?</h1>
+        <h1 className="text-white font-bold text-5xl my-12">
+          Who is Watching?
+        </h1>
 
         <ul className="flex p-8 my-12">
-          <li className="max-w-[200px] w-[155px] cursor-pointer flex flex-col items-center gap-3 min-w-[200px]">
-            <div className="relative">
-              <div
-                className="max-w-[200px] w-[155px] cursor-pointer flex flex-col items-center gap-3 min-w-[200px] relative"
-                onClick={loginIntoAccount}
-              >
-                <Image
-                  src={
-                    'https://occ-0-2611-3663.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHRSk/AAAABfNXUMVXGhnCZwPI1SghnGpmUgqS_J-owMff-jig42xPF7vozQS1ge5xTgPTzH7ttfNYQXnsYs4vrMBaadh4E6RTJMVepojWqOXx.png?r=1d4'
-                  }
-                  alt={'account'}
-                  width={155}
-                  height={155}
-                />
-              </div>
-              {isDelete ? (
-                <div className="absolute transform bottom-0 left-5 z-10 cursor-pointer">
-                  <Trash2 className="w-8 h-8 text-red-600" />
+          {result?.data?.map((account) => (
+            <li
+              className="max-w-[200px] w-[155px] cursor-pointer flex flex-col items-center gap-3 min-w-[200px]"
+              key={account._id}
+            >
+              <div className="relative">
+                <div
+                  className="max-w-[200px] w-[155px] cursor-pointer flex flex-col items-center gap-3 min-w-[200px] relative"
+                  onClick={loginIntoAccount}
+                >
+                  <Image
+                    src={
+                      'https://occ-0-2611-3663.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHRSk/AAAABfNXUMVXGhnCZwPI1SghnGpmUgqS_J-owMff-jig42xPF7vozQS1ge5xTgPTzH7ttfNYQXnsYs4vrMBaadh4E6RTJMVepojWqOXx.png?r=1d4'
+                    }
+                    alt={'account'}
+                    width={155}
+                    height={155}
+                  />
                 </div>
-              ) : null}
-            </div>
+                {isDelete ? (
+                  <div className="absolute transform bottom-0 left-5 z-10 cursor-pointer">
+                    <Trash2 className="w-8 h-8 text-red-600" />
+                  </div>
+                ) : null}
+              </div>
 
-            <div className="flex items-center gap-1">
-              <span className="font-mono font-bold text-xl">Nodir</span>
-              <LockKeyhole />
-            </div>
-          </li>
+              <div className="flex items-center gap-1">
+                <span className="font-mono font-bold text-xl">
+                  {account.name}
+                </span>
+                <LockKeyhole />
+              </div>
+            </li>
+          ))}
 
           <li
             className="border  bg-[#e5b109] font-bold text-xl border-black rounded max-w-[200px] min-w-[84px] max-h-[200px] min-h-[84px] w-[155px] h-[155px] cursor-pointer flex justify-center items-center"

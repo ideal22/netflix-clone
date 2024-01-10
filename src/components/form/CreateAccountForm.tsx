@@ -15,6 +15,9 @@ import {
 } from '../ui/form'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
+import { accountApi } from '@/redux-store/reducers/AccountReducer'
+import { AccountProps } from '@/types/context.interface'
+import { useSession } from 'next-auth/react'
 
 const CreateAccountForm = () => {
   const form = useForm<CreateFormType>({
@@ -25,8 +28,21 @@ const CreateAccountForm = () => {
     },
   })
 
+  const { data: session }: any = useSession()
+
+  const [createAccount, {}] = accountApi.useCreateAccountMutation()
+
   const submitForm = async (values: CreateFormType) => {
-    console.log(values)
+    try {
+      await createAccount({
+        ...values,
+        uid: session?.user?.uid,
+      } as AccountProps)
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error(e.message)
+      }
+    }
   }
   return (
     <>

@@ -29,10 +29,14 @@ export const POST = async (req: Request) => {
       })
     }
 
-    const hashedPin = await hash(uid, 10)
+    const hashedPin = await hash(pin, 10)
 
-    const account = await Account.create({ name, uid, pin: hashedPin })
-    return NextResponse.json({ account })
+    const account = await Account.create({
+      name,
+      uid,
+      pin: hashedPin,
+    })
+    return NextResponse.json({ account, success: true, message: 'success' })
   } catch (e) {
     return NextResponse.json({
       success: false,
@@ -56,9 +60,13 @@ export const GET = async (req: Request) => {
       })
     }
 
-    const account = await Account.find({ uid })
+    const accounts = await Account.find({ uid })
 
-    return NextResponse.json({ success: true, account })
+    return NextResponse.json({
+      success: true,
+      data: accounts,
+      message: 'success',
+    })
   } catch (e) {
     return NextResponse.json({
       success: false,
