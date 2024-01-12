@@ -76,7 +76,7 @@ export const GET = async (req: Request) => {
 }
 
 // Delete an account
-export const DELETE = async (req: Request) => {
+export async function DELETE(req: Request) {
   try {
     await connectToDatabase()
 
@@ -86,20 +86,20 @@ export const DELETE = async (req: Request) => {
     if (!id) {
       return NextResponse.json({
         success: false,
-        message: 'Account id is required!',
+        message: 'Account id is mandatory',
       })
     }
 
-    await Account.findByIdAndDelete({ id })
+    await Account.findByIdAndDelete(id)
 
     return NextResponse.json({
       success: true,
-      message: 'Account deleted successfully!',
+      message: 'Account deleted successfully',
     })
   } catch (e) {
     return NextResponse.json({
       success: false,
-      message: 'Something went wrong!',
+      message: 'Something went wrong',
     })
   }
 }

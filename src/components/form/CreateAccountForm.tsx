@@ -1,5 +1,6 @@
 'use client'
 
+import { Dispatch, SetStateAction } from 'react'
 import { CreateFormType, createAccountSchema } from '@/lib/validation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -19,7 +20,11 @@ import { accountApi } from '@/redux-store/reducers/AccountReducer'
 import { AccountProps } from '@/types/context.interface'
 import { useSession } from 'next-auth/react'
 
-const CreateAccountForm = () => {
+type Props = {
+  openDialog: Dispatch<SetStateAction<boolean>>
+}
+
+const CreateAccountForm = ({ openDialog }: Props) => {
   const form = useForm<CreateFormType>({
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
@@ -30,14 +35,18 @@ const CreateAccountForm = () => {
 
   const { data: session }: any = useSession()
 
-  const [createAccount, {}] = accountApi.useCreateAccountMutation()
+  const [createAccount, { isLoading }] = accountApi.useCreateAccountMutation()
 
   const submitForm = async (values: CreateFormType) => {
     try {
-      await createAccount({
+      const res = await createAccount({
         ...values,
         uid: session?.user?.uid,
       } as AccountProps).unwrap()
+
+      if (res.success) {
+        openDialog(false)
+      }
     } catch (e) {
       if (e instanceof Error) {
         console.error(e.message)
@@ -121,7 +130,7 @@ const CreateAccountForm = () => {
             disabled={form.formState.isSubmitting}
             type="submit"
           >
-            Create account
+            {isLoading ? 'Creating Account' : 'Create Account'}
           </Button>
         </form>
       </Form>

@@ -1,15 +1,56 @@
-import { useState } from 'react'
+'use client'
+import { FC, useState } from 'react'
 import PinInput from 'react-pin-input'
-
 import { Loader2 } from 'lucide-react'
+import { loginApi } from '@/redux-store/reducers/LoginReducer'
+import { accountApi } from '@/redux-store/reducers/AccountReducer'
+import { useSession } from 'next-auth/react'
+import { useGlobalContext } from '@/context/GlobalContext'
+import { AccountProps, AccountsAxsiosResponse } from '@/types/context.interface'
+import { usePathname, useRouter } from 'next/navigation'
 
-const LoginAccountForm = () => {
+type Props = {
+  currentAccountId: string
+}
+
+const LoginAccountForm: FC<Props> = ({ currentAccountId }) => {
   const [error, setError] = useState(false)
   const [pin, setPin] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
 
-  const onSubmit = (value: string) => {
-    setIsLoading(true)
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const { data: session }: any = useSession()
+
+  const [login, { isLoading }] = loginApi.useLoginAccountMutation()
+  const { data: result } = accountApi.useFetchAllAccountsQuery(
+    session?.user?.uid,
+  )
+
+  const { setAccount } = useGlobalContext()
+
+  const onSubmit = async (value: string) => {
+    try {
+      const currentAccount =
+        Array.isArray(result?.data) &&
+        result?.data?.find((acc) => acc._id === currentAccountId)
+
+      if (currentAccount) {
+        const res: AccountsAxsiosResponse = await login({
+          pin: value,
+          accountId: currentAccountId,
+          uid: currentAccount?.uid,
+        }).unwrap()
+
+        if (res.success) {
+          setAccount(res.data as AccountProps)
+          sessionStorage.setItem('account', JSON.stringify(res.data))
+          router.push(pathname)
+        }
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
   return (
     <div>

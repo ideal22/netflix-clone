@@ -12,11 +12,18 @@ export interface AccountProps {
   pin: string
 }
 
+export interface Account {
+  _id: string
+  uid: string
+  name: string
+  pin: string
+}
+
 export interface AxiosResponse {
   message: string
   success: boolean
 }
 
 export interface AccountsAxsiosResponse extends AxiosResponse {
-  data: AccountProps[]
+  data: AccountProps[] | AccountProps
 }
